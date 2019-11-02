@@ -2,6 +2,13 @@
 
 Ardunio code for a DIY aquarium CO2 and Fertilizer dosing system.
 
+Using 2 `dosing pumps`, `Arduino Nano`, `LCD display` and a couple other bits. Did use a `Real Time Clock` but this died, although is still physically installed. Code changed to just countdown using internal clock.
+
+Doses `EasyLife` `EasyCarbo` and `Profito`
+
+- `EasyCarbo` @ 6.5ml / day (or 0.81ml per 3h as currently configured)
+- `Profito` @ 3ml / day (or 0.37ml per 3h as currently configured)
+
 # Schematic 
 
 *This website is now dead :(*
