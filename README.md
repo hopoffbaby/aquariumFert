@@ -1,3 +1,11 @@
+# Intro
+
+Ardunio code for a DIY aquarium CO2 and Fertilizer dosing system.
+
+# Schematic 
+
+*This website is now dead :(*
+
 aquariumFert
 
 using:
