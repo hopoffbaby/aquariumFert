@@ -2,6 +2,8 @@
 
 Ardunio code for a DIY aquarium CO2 and Fertilizer dosing system.
 
+Based on http://fishtankprojects.com/diy-aquarium-projects/arduino-controlled-dosing-pumps/
+
 Using 2 `dosing pumps`, `Arduino Nano`, `LCD display` and a couple other bits. Did use a `Real Time Clock` but this died, although is still physically installed. Code changed to just countdown using internal clock.
 
 Doses `EasyLife` `EasyCarbo` and `Profito`
