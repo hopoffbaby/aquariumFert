@@ -1,9 +1,6 @@
 #include <LiquidCrystal.h>
 
-///////////////
-//LED DISPLAY//
-///////////////
-class LedDisplay {
+class LEDDisplay {
   private:
     // initialize the library with the numbers of the interface pins
     LiquidCrystal _lcd;
@@ -11,7 +8,7 @@ class LedDisplay {
     String _line2 = "";
     bool _toUpdate = false;
   public:
-    LedDisplay(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6) : _lcd(pin1, pin2, pin3, pin4, pin5, pin6)
+    LEDDisplay(int pin1, int pin2, int pin3, int pin4, int pin5, int pin6) : _lcd(pin1, pin2, pin3, pin4, pin5, pin6)
     {
       // set up the LCD's number of columns and rows:
       _lcd.begin(16, 2);
@@ -41,20 +38,65 @@ class LedDisplay {
     }
 };
 
-///////////////
-//END LED DISPLAY
-//////////////
+class Button {
+  private:
+    bool _pressed;
+    int _pin;
+  
+  public:
+    Button(int pin){
+      _pressed = false;
+      _pin = pin;
+    }
 
-///////////////
-//MOTOR
-//////////////
+    bool getStatus(){
+      return digitalRead(_pin);
+    }
+};
+
+class LED {
+  private:
+    int _pin;
+    bool _state;
+    unsigned long _stateChangedTime;
+    int _interval;
+
+  public:
+    LED(int pin, int interval){
+      _pin = pin;
+      _state = false;
+      _stateChangedTime = millis();
+      _interval = interval;
+    }
+
+    void flash() {
+      unsigned long now = millis();
+      if (now > (_stateChangedTime + _interval))
+      {
+        //change led state
+        if (_state == false) {
+          _state = true;
+        }
+        else {
+          _state = false;
+        }
+        _stateChangedTime = now;
+      }
+      digitalWrite(_pin, _state);
+    }
+
+    int getPin(){
+      return _pin;
+    }
+};
+
 class Motor {
   private:
     // initialize the library with the numbers of the interface pins
     int _pin;
     bool _primingRequired;
     bool _running;
-    int _doseLength;
+    int _doseLength; // dosing rate = 1ml / 1000ms
     unsigned long _lastDoseStart;
     bool _dosingRequired;
     bool _dosingNow;
@@ -69,6 +111,10 @@ class Motor {
       _lastDoseStart = 0;
       _dosingRequired = false;
       pinMode(_pin, OUTPUT);
+    }
+
+    int getPin() {
+      return _pin;
     }
 
     String getState()
@@ -99,7 +145,8 @@ class Motor {
     void dose() {
       if (!_dosingRequired)
       {
-        _dosingRequired = true; _lastDoseStart = millis();
+        _dosingRequired = true; 
+        _lastDoseStart = millis();
       }
     }
 
@@ -126,95 +173,65 @@ class Motor {
     }
 
 };
-///////////////
-//END MOTOR
-//////////////
 
-LedDisplay disp(A0, A1, 5, 4, 3, 2);
-int redButtonPin = 9;
-int yellowButtonPin = 8;
+LEDDisplay disp(A0, A1, 5, 4, 3, 2);
 
-int count = 0;
+Button redButton(9); // motor2 
+Button yellowButton(8); //motor1
+LED boardLED(13,1000);
 
-const int ledPin = 13;
-int ledState = 0;
-unsigned long ledStateChangeTime = 0;
-int ledPulseInterval = 1000;
-
-const int motor1pin = 11;
-const int motor2pin = 12;
-int motorState = 0;
-
-// dosing rate = 1ml / 1000ms
-Motor m1(motor1pin, 812);//twice a day = 6.5ml daily = 6500ms/day
-Motor m2(motor2pin, 375);//twice a day = 3.0ml daily = 3000ms/day
+Motor yellowMotor(11, 812);//(clear liquid carbon) twice a day = 6.5ml daily = 6500ms/day
+Motor redMotor(12, 375);//(Black plant ferts) twice a day = 3.0ml daily = 3000ms/day
 
 long dosingInterval = 10800000; //1 min = 60000ms, 1 hour = 3600000ms, 3 hours = 10800000ms, 6 hours = 21600000ms
-long millisUntilDosing = dosingInterval;
-unsigned long timeNow = 0;
+long msUntilDosing = dosingInterval;
+unsigned long currentTime = 0;
+long totalDoses = 0;
 
 void setup() {
-  pinMode(ledPin, OUTPUT);
-  pinMode(motor1pin, OUTPUT);
-  pinMode(motor2pin, OUTPUT);
-
-  ledStateChangeTime = millis();
-  Serial.begin(9600);
-  timeNow = millis();
+  pinMode(boardLED.getPin(), OUTPUT);
+  pinMode(yellowMotor.getPin(), OUTPUT);
+  pinMode(redMotor.getPin(), OUTPUT);
+  currentTime = millis();
 }
 
 void loop() {
-  unsigned long oldTime = timeNow;
-  timeNow = millis();
-  if (timeNow < oldTime) {
+  unsigned long oldTime = currentTime;
+  currentTime = millis();
+  if (currentTime < oldTime) {
     return; //overflowed; panic
   }
-  millisUntilDosing = millisUntilDosing - (timeNow - oldTime);
+  msUntilDosing = msUntilDosing - (currentTime - oldTime);
 
   //read priming buttons
-  getPrimeStatus();
+  yellowMotor.prime(yellowButton.getStatus());
+  redMotor.prime(redButton.getStatus());
 
-  flashLed();
+  //blinky
+  boardLED.flash();
 
   //print countdown
-  disp.printLine("Ferts in: " + String(round(millisUntilDosing / 1000)) + "s", 0);
+  String dispTime = "";
+  if (msUntilDosing >= 60000) {
+    dispTime = String(round((msUntilDosing / 1000)/60)) + "m";
+  }
+  else {
+    dispTime = String(round(msUntilDosing / 1000)) + "s";
+  }
+  disp.printLine("Ferts in: " + dispTime, 0);
 
-  if (millisUntilDosing <= 0)
+  if (msUntilDosing <= 0)
   {
-    m1.dose();
-    m2.dose();
-    millisUntilDosing = dosingInterval;
+    yellowMotor.dose();
+    redMotor.dose();
+    msUntilDosing = dosingInterval;
+    totalDoses = totalDoses + 1;
   }
 
-   m1.tick();
-   m2.tick();
+   yellowMotor.tick();
+   redMotor.tick();
 
   //print motor status
-  disp.printLine("M1:" + m1.getState() + " M2:" + m2.getState(),1);
+  disp.printLine("Y:" + yellowMotor.getState() + " R:" + redMotor.getState() + " T: " + (String) totalDoses,1);
   delay(50);
-}
-
-
-void flashLed() {
-  unsigned long now = millis();
-  if (now > (ledStateChangeTime + ledPulseInterval))
-  {
-    //change led state
-    if (ledState == 0) {
-      ledState = 1;
-    }
-    else {
-      ledState = 0;
-    }
-    ledStateChangeTime = now;
-  }
-  digitalWrite(ledPin, ledState);
-}
-
-void getPrimeStatus()
-{
-  bool yellowState = digitalRead(yellowButtonPin);
-  bool redState = digitalRead(redButtonPin);
-  m1.prime(yellowState);
-  m2.prime(redState);
 }
