@@ -1,7 +1,4 @@
-// #include <Wire.h>
 #include <LiquidCrystal.h>
-// #define DS1307_I2C_ADDRESS 0x68
-
 
 ///////////////
 //LED DISPLAY//
@@ -133,104 +130,9 @@ class Motor {
 //END MOTOR
 //////////////
 
-// ///////////////
-// //RTC
-// //////////////
-// class RTClock {
-// private:
-//   // Convert normal decimal numbers to binary coded decimal
-//   byte decToBcd(byte val)
-//   {
-//     return ( (val/10*16) + (val%10) );
-//   }
-
-//   // Convert binary coded decimal to normal decimal numbers
-//   byte bcdToDec(byte val)
-//   {
-//     return ( (val/16*10) + (val%16) );
-//   }
-// public:
-//   RTClock()
-//   {
-//   }
-
-//   void setDateDs1307(byte second,        // 0-59
-//   byte minute,        // 0-59
-//   byte hour,          // 1-23
-//   byte dayOfWeek,     // 1-7
-//   byte dayOfMonth,    // 1-28/29/30/31
-//   byte month,         // 1-12
-//   byte year)          // 0-99
-//   {
-//     // 1) Sets the date and time on the ds1307
-//     // 2) Starts the clock
-//     // 3) Sets hour mode to 24 hour clock
-//     // Assumes you're passing in valid numbers
-//     Wire.beginTransmission(DS1307_I2C_ADDRESS);
-//     Wire.write(0);
-//     Wire.write(decToBcd(second));    // 0 to bit 7 starts the clock
-//     Wire.write(decToBcd(minute));
-//     Wire.write(decToBcd(hour));      // If you want 12 hour am/pm you need to set
-//     // bit 6 (also need to change readDateDs1307)
-//     Wire.write(decToBcd(dayOfWeek));
-//     Wire.write(decToBcd(dayOfMonth));
-//     Wire.write(decToBcd(month));
-//     Wire.write(decToBcd(year));
-//     Wire.endTransmission();
-//   }
-
-//   // Gets the date and time from the ds1307
-//   void getDateDs1307(int *second,
-//   int *minute,
-//   int *hour,
-//   int *dayOfWeek,
-//   int *dayOfMonth,
-//   int *month,
-//   int *year)
-//   {
-//     // Reset the register pointer
-//     Wire.beginTransmission(DS1307_I2C_ADDRESS);
-//     Wire.write(0);
-//     Wire.endTransmission();
-
-//     Wire.requestFrom(DS1307_I2C_ADDRESS, 7);
-
-//     // A few of these need masks because certain bits are control bits
-//     *second     = (int)bcdToDec(Wire.read() &0x7f);
-//     *minute     = (int)bcdToDec(Wire.read());
-//     *hour       = (int)bcdToDec(Wire.read() &0x3f);  // Need to change this if 12 hour am/pm
-//     *dayOfWeek  = (int)bcdToDec(Wire.read());
-//     *dayOfMonth = (int)bcdToDec(Wire.read());
-//     *month      = (int)bcdToDec(Wire.read());
-//     *year       = (int)bcdToDec(Wire.read());
-//   }
-
-//   String getDateString()
-//   {
-//     int second, minute, hour, dayOfWeek, dayOfMonth, month, year;
-//     getDateDs1307(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month, &year);
-//     return String(dayOfMonth) + "/" + String(month) + "/" + String(year);
-//   }
-
-//   // Stops the DS1307, but it has the side effect of setting seconds to 0
-//   // Probably only want to use this for testing
-//   /*void stopDs1307()
-//   {
-//     Wire.beginTransmission(DS1307_I2C_ADDRESS);
-//     Wire.write(0);
-//     Wire.writeWire.writeWire.write(0x80);
-//     Wire.endTransmission();
-//   }*/
-// };
-// ///////////////
-// //END RTC
-// //////////////
-
 LedDisplay disp(A0, A1, 5, 4, 3, 2);
 int redButtonPin = 9;
 int yellowButtonPin = 8;
-//Button downButton(7, 200);
-//RTClock rtc;
 
 int count = 0;
 
@@ -251,37 +153,17 @@ long dosingInterval = 10800000; //1 min = 60000ms, 1 hour = 3600000ms, 3 hours =
 long millisUntilDosing = dosingInterval;
 unsigned long timeNow = 0;
 
-
 void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(motor1pin, OUTPUT);
   pinMode(motor2pin, OUTPUT);
 
-  // Print a message to the LCD.
-  //lcd.print("hello, world!");
   ledStateChangeTime = millis();
-  //byte second, minute, hour, dayOfWeek, dayOfMonth, month, year;
-  //Wire.begin();
   Serial.begin(9600);
-
-  // Change these values to what you want to set your clock to.
-  // You only need to run this the first time you setup your RTC.
-  // Set the correct value below and un comment it to run it.
-  //rtc.setDateDs1307(00, 37, 17, 5, 30, 9, 16); //sec, min, hour, dayOfWeek, dayOfMonth, month, year
-
   timeNow = millis();
 }
 
 void loop() {
-  //get time
-  // int second, minute, hour, dayOfWeek, dayOfMonth, month, year;
-  // rtc.getDateDs1307(&second, &minute, &hour, &dayOfWeek, &dayOfMonth, &month, &year);
-  // if (second > 59 || minute > 59 || hour > 23)
-  // {
-  //   //bad clock, abort loop!
-  //   return;
-  // }
-
   unsigned long oldTime = timeNow;
   timeNow = millis();
   if (timeNow < oldTime) {
@@ -289,25 +171,19 @@ void loop() {
   }
   millisUntilDosing = millisUntilDosing - (timeNow - oldTime);
 
-
   //read priming buttons
   getPrimeStatus();
 
   flashLed();
 
-  //print time
-  // disp.printLine(String(hour) + ":" + String(minute) + ":" + String(second),0);
-
   //print countdown
   disp.printLine("Ferts in: " + String(round(millisUntilDosing / 1000)) + "s", 0);
-  // disp.printLine(String(hour) + ":" + String(minute) + ":" + String(second),0);
 
   if (millisUntilDosing <= 0)
   {
     m1.dose();
     m2.dose();
     millisUntilDosing = dosingInterval;
-
   }
 
    m1.tick();
@@ -337,11 +213,8 @@ void flashLed() {
 
 void getPrimeStatus()
 {
-  //Serial.println(yellowButton.getState());
   bool yellowState = digitalRead(yellowButtonPin);
   bool redState = digitalRead(redButtonPin);
-  //Serial.print(yellowState);
-  //Serial.println(redState);
   m1.prime(yellowState);
   m2.prime(redState);
 }
