@@ -180,10 +180,36 @@ Button redButton(9); // motor2
 Button yellowButton(8); //motor1
 LED boardLED(13,1000);
 
-Motor yellowMotor(11, 812);//(clear liquid carbon) twice a day = 6.5ml daily = 6500ms/day
-Motor redMotor(12, 375);//(Black plant ferts) twice a day = 3.0ml daily = 3000ms/day
+// Motor dosing rate = 1ml/1000ms
 
-long dosingInterval = 10800000; //1 min = 60000ms, 1 hour = 3600000ms, 3 hours = 10800000ms, 6 hours = 21600000ms
+// Clear liquid (yellow motor) = easycarbo
+// https://www.easylifeaquarium.co.uk/products/freshwater/plant-food/easycarbo
+// Aquarium with only a few plants : 1 ml per 100 litres daily
+// Aquarium moderately planted : 1 ml per 50 litres daily
+// Aquarium heavily planted : 1 ml per 25 litres daily
+
+// Brown liquid (red motor) = profito plat food
+// https://www.easylifeaquarium.co.uk/products/freshwater/plant-food/profito
+// The dosage is very economical: 10 ml per 100 litres aquarium water every week.
+// It's also possible to add 1/7 of the total dosage on a daily basis.
+// The colour of the product can vary from dark green to dark brown.
+// TIP:
+// Use the first couple of weeks about 1/3 of the dosage. 
+// That can later be adjusted to attain the best possible growth rate 
+// (weekly per 100 litres 10 ml +/- 40%). The best dosage can be determined by 
+// observing the youngest leaves of the plant. 
+// If they are light green, then the dosage can be increased. 
+// When algae should appear and/or no further growth enhancement of 
+// the plants can be observed, then the dosage may be reduced. 
+// The introduction of some fast-growing plants can indeed be very helpful 
+// to prevent algae.
+
+Motor yellowMotor(11, 875);//(clear liquid carbon) 3.5ml/day
+Motor redMotor(12, 375);//(Black plant ferts) 1.5ml/day
+
+//6 hourly / 4 times daily
+long dosingInterval = 21600000; //1 min = 60000ms, 1 hour = 3600000ms, 3 hours = 10800000ms, 6 hours = 21600000ms
+
 long msUntilDosing = dosingInterval;
 unsigned long currentTime = 0;
 long totalDoses = 0;
