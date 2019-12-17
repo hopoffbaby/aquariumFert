@@ -204,11 +204,11 @@ LED boardLED(13,1000);
 // The introduction of some fast-growing plants can indeed be very helpful 
 // to prevent algae.
 
-Motor yellowMotor(11, 875);//(clear liquid carbon) 3.5ml/day
-Motor redMotor(12, 375);//(Black plant ferts) 1.5ml/day
+Motor yellowMotor(11, 541);//(clear liquid carbon) 6.5ml/day
+Motor redMotor(12, 214);//(Black plant ferts) 2.5ml/day
 
-//6 hourly / 4 times daily
-long dosingInterval = 21600000; //1 min = 60000ms, 1 hour = 3600000ms, 3 hours = 10800000ms, 6 hours = 21600000ms
+//2 hourly / 12 times daily
+long dosingInterval = 7200000; //1 min = 60000ms, 1 hour = 3600000ms, 2 hour = 7200000ms, 3 hours = 10800000ms, 6 hours = 21600000ms
 
 long msUntilDosing = dosingInterval;
 unsigned long currentTime = 0;
@@ -259,5 +259,5 @@ void loop() {
 
   //print motor status
   disp.printLine("Y:" + yellowMotor.getState() + " R:" + redMotor.getState() + " T: " + (String) totalDoses,1);
-  delay(50);
+  delay(10);
 }
