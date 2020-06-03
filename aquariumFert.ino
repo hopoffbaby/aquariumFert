@@ -203,12 +203,18 @@ LED boardLED(13,1000);
 // the plants can be observed, then the dosage may be reduced. 
 // The introduction of some fast-growing plants can indeed be very helpful 
 // to prevent algae.
+long dailyms = 3600000 * 24; //1 min = 60000ms, 1 hour = 3600000ms, 2 hour = 7200000ms, 3 hours = 10800000ms, 6 hours = 21600000ms
 
-Motor yellowMotor(11, 541);//(clear liquid carbon) 6.5ml/day
-Motor redMotor(12, 214);//(Black plant ferts) 2.5ml/day
+long dailyDoses = 6;
 
-//2 hourly / 12 times daily
-long dosingInterval = 7200000; //1 min = 60000ms, 1 hour = 3600000ms, 2 hour = 7200000ms, 3 hours = 10800000ms, 6 hours = 21600000ms
+long dosingInterval = dailyms/dailyDoses; 
+
+long easyCarboDaily = 7200; //7.2ml
+long profitoDaily = 3000; //3ml
+
+Motor yellowMotor(11, easyCarboDaily/dailyDoses);//(clear liquid carbon)
+Motor redMotor(12, profitoDaily/dailyDoses);//(Black plant ferts)
+
 
 long msUntilDosing = dosingInterval;
 unsigned long currentTime = 0;
